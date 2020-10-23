@@ -15,6 +15,14 @@ app.get("/api", (req, res) => {
 });
 
 
+app.get("/world", (req, res) => {
+	fs.readFile('./data/world.json', (err, data) => {
+		if(err) throw err;
+		res.send(data.toString());
+	})
+});
+
+
 
 app.listen(4000, () => {
 
