@@ -31,10 +31,10 @@ https://opendata.rdw.nl/resource/cgqw-pfbp.json
 
 	"areamanagerid": "299",
 	"location":{
-		"latitude": "51.930899297"
+		"latitude": "51.930899297",
 		"longitude": "6.076162452"
 	},
-	"sellingpointdesc": "Parkeerterrein Haspelstraat,
+	"sellingpointdesc": "Parkeerterrein Haspelstraat",
 	"sellingpointid": "8704",
 	"startdatesellingpoint": "20180604"
 }
