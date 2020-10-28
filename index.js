@@ -104,6 +104,7 @@ function collectAmountPerYearMonth(collectorArray, dataArray) {
 };
 
 getData(geoVerkoopPuntApi).then(data => {
+	console.log(data[0]);
 	return filterDataWithStartYear(data);
 })
 .then(data => {
