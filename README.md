@@ -28,16 +28,15 @@ https://opendata.rdw.nl/resource/cgqw-pfbp.json
 #### The format of a datum 
 
 ```json
-{
-	areamanagerid: "299",
-	location:{
-		latitude: "51.930899297"
-		longitude: "6.076162452"
-	},
 
-	sellingpointdesc: "Parkeerterrein Haspelstraat",
-	sellingpointid: "8704",
-	startdatesellingpoint: "20180604"
+	"areamanagerid": "299",
+	"location":{
+		"latitude": "51.930899297"
+		"longitude": "6.076162452"
+	},
+	"sellingpointdesc": "Parkeerterrein Haspelstraat,
+	"sellingpointid": "8704",
+	"startdatesellingpoint": "20180604"
 }
 ```
 
@@ -47,7 +46,7 @@ In the datum above, the startdatesellingpoint is fromatted in an akward way. The
 
 ```json
 {
-	startDateSellingPoint: "Tue Apr 01 2014 00:00:00 GMT+0200 (Central European Summer Time)",
-	location: [51.930899297,6.076162452]
+	"startDateSellingPoint": "Tue Apr 01 2014 00:00:00 GMT+0200 (Central European Summer Time)",
+	"location": [51.930899297,6.076162452]
 }
 ```
