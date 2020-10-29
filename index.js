@@ -2,18 +2,16 @@ const geoVerkoopPuntApi = "https://opendata.rdw.nl/resource/cgqw-pfbp.json?$limi
 
 async function getData(url) {
 	const result = await fetch(url);
+	
 	const data = await result.json();
+	
 	return data; 
 };
 
-function getYear(string) {
-	//console.log(string);
+function setTrueDate(string) {
 	const year = string.slice(0,4);
 	const month = string.slice(4,6);
-
 	const yearMonth = `${year}  ${month}`
-
-	//console.log(yearMonth);
 
 	return new Date(yearMonth);
 
@@ -22,7 +20,13 @@ function getYear(string) {
 function filterDataWithStartYear(dataArray) {
 
 	return dataArray.filter(datum => {
-		return typeof datum.startdatesellingpoint === 'string';
+		return typeof datum.startdatesellingpoint === 'string' && datum.enddatesellingpoint === undefined;
+	});
+};
+
+function filterDataWithEndYear(dataArray) {
+	return dataArray.filter(datum => {
+		return typeof datum.enddatesellingpoint === "string";
 	});
 };
 
@@ -34,30 +38,11 @@ function createCoordinatesArray(coordinates) {
 function cleanData(dataArray) {
 	return dataArray.map(datum => {
 		return {
-			sellingPointStartDate: getYear(datum.startdatesellingpoint),
+			sellingPointStartDate: setTrueDate(datum.startdatesellingpoint),
 			coordinates: createCoordinatesArray(datum.location)
 		};
 	});
 };
-
-
-
-// function getAmountBetaalpuntenPerYear(collectorArray, rawData) {
-
-// 	rawData.forEach((datum) => {
-
-// 		const year = collectorArray.find((y, index, self) => {
-// 			const found = index === self.findIndex((t) => {
-// 				return t.yearStarted === datum.sellingPointStartYear
-// 			});
-// 			return found;
-// 		});
-// 		year.amountStarted = year.amountStarted+1;
-// 	});
-// 	return collectorArray;
-// };
-
-
 
 function createPerYearMonthObjectArray(dataArray) {
 	const objectArray = [];
@@ -89,22 +74,17 @@ function createPerYearMonthObjectArray(dataArray) {
 
 function collectAmountPerYearMonth(collectorArray, dataArray) {
 	
-
 	dataArray.forEach((datum) => {
-
 		const index = collectorArray.findIndex((i) => {
 		
 			return new Date(i.date).getTime() === new Date(datum.sellingPointStartDate).getTime();
 		});
-
 		collectorArray[index].amount = collectorArray[index].amount + 1;
 	});
-
 	return collectorArray;
 };
 
 getData(geoVerkoopPuntApi).then(data => {
-	console.log(data[0]);
 	return filterDataWithStartYear(data);
 })
 .then(data => {
@@ -114,9 +94,11 @@ getData(geoVerkoopPuntApi).then(data => {
 	return collectAmountPerYearMonth(yearMonthArray, data);
 }).then(constructChart)
 
+
+
 function constructChart(data) {
 	const height = 400;
-	const width = 1000;
+	const width = 1500;
 
 	const scaleY = d3.scaleLinear().range([0, height-20]);
 	const scaleX = d3.scaleTime().domain(d3.extent(data, (d) => {
@@ -126,8 +108,7 @@ function constructChart(data) {
 	const axisX = d3.axisBottom(scaleX);
 	const axisY = d3.axisLeft(scaleY);
 	
-	//scaleX.domain([2000,2020])
-	scaleY.domain([2700,0])
+	scaleY.domain([500,0])
 
 	const svg = d3.select("body")
 		.append("svg")
@@ -135,7 +116,6 @@ function constructChart(data) {
 		.attr("height", height);
 
 
-	//console.log(line(data));
 	
 	svg.append("g")
 		.attr("class","scale-x")
@@ -163,8 +143,3 @@ function constructChart(data) {
 			})));
 
 };
-
-	
-
-
-//constructChart();

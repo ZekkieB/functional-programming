@@ -28,7 +28,7 @@ https://opendata.rdw.nl/resource/cgqw-pfbp.json
 #### The format of a datum 
 
 ```json
-
+{
 	"areamanagerid": "299",
 	"location":{
 		"latitude": "51.930899297",
