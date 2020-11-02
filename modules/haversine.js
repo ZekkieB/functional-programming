@@ -5,7 +5,7 @@ const sin = Math.sin
 const sqrt = Math.sqrt
 const PI = Math.PI
 
-// equatorial mean radius of Earth (in km)
+// equatorial mean radius of Earth (in m)
 const R = 6371
 
 function squared (x) { return x * x }
@@ -26,3 +26,4 @@ function haversineDistance (a, b) {
 }
 
 
+export {haversineDistance};
