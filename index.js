@@ -7,12 +7,31 @@ import {createCoordinatesArray} from "./modules/cleaning.js";
 
 const testCoords = [52.092876,5.104480];
 
-function clickHandler() {
-	const button = document.querySelector("button");
-	const cityField = document.querySelector("input");
+function reverseGeoCode(city) {
+	const geocoder =  new google.maps.Geocoder();
+	return new Promise((resolve, reject) => {
+		geocoder.geocode({"address" : `${city},nl`}, (result,status) => {
+			const lat = result[0].geometry.location.lat();
+			const lng = result[0].geometry.location.lng();
 
-	button.onclick = function() {
-		console.log(cityField.value)
+			resolve([lat,lng]);
+		});
+	});
+};
+
+
+function clickHandler(data) {
+	const button = document.querySelector("button");
+	const cityField = document.querySelector("#city");
+	const rangeField = document.querySelector("#range");
+
+	button.onclick = async function() {
+		const cityCords = await reverseGeoCode(cityField.value);
+		const range = parseInt(rangeField.value);
+		console.log(range)
+		const inRangeArray = filter(data,filterWithinRange(range,cityCords));
+
+		console.log(inRangeArray);
 	}
 }
 
@@ -29,29 +48,11 @@ async function main() {
 	cleanArray.forEach((item) => {
 		item.location = createCoordinatesArray(item.location);
 	});
-
-
-
-
-
-	const inRange = filter(cleanArray,filterWithinRange(10,testCoords))
-
-
-	clickHandler();
+	
+	clickHandler(cleanArray);
 
 	return 0;
 };
 
 
 main();
-
-
-
-
-
-
-
-
-
-
-
