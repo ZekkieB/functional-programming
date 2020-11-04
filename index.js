@@ -4,8 +4,7 @@ import getData from "./modules/getData.js";
 import {filter,filterWithStartingDate, filterWithinRange} from "./modules/filters.js";
 import {createCoordinatesArray} from "./modules/cleaning.js";
 
-
-const testCoords = [52.092876,5.104480];
+import * as d3 from "d3";
 
 function reverseGeoCode(city) {
 	const geocoder =  new google.maps.Geocoder();
@@ -13,7 +12,6 @@ function reverseGeoCode(city) {
 		geocoder.geocode({"address" : `${city},nl`}, (result,status) => {
 			const lat = result[0].geometry.location.lat();
 			const lng = result[0].geometry.location.lng();
-
 			resolve([lat,lng]);
 		});
 	});
@@ -48,7 +46,7 @@ async function main() {
 	cleanArray.forEach((item) => {
 		item.location = createCoordinatesArray(item.location);
 	});
-	
+
 	clickHandler(cleanArray);
 
 	return 0;
