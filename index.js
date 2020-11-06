@@ -2,9 +2,13 @@ const geoVerkoopPuntApi = "https://opendata.rdw.nl/resource/cgqw-pfbp.json?$limi
 
 import getData from "./modules/getData.js";
 import {filter,filterWithStartingDate, filterWithinRange} from "./modules/filters.js";
-import {createCoordinatesArray} from "./modules/cleaning.js";
+import {createCoordinatesArray, setTrueDate} from "./modules/cleaning.js";
+import {createPerYearMonthObjectArray,collectAmountPerYearMonth} from "./modules/dataTransform.js";
+import {constructChart} from "./modules/chart.js";
 
-import * as d3 from "d3";
+
+
+
 
 function reverseGeoCode(city) {
 	const geocoder =  new google.maps.Geocoder();
@@ -22,14 +26,18 @@ function clickHandler(data) {
 	const button = document.querySelector("button");
 	const cityField = document.querySelector("#city");
 	const rangeField = document.querySelector("#range");
-
 	button.onclick = async function() {
 		const cityCords = await reverseGeoCode(cityField.value);
 		const range = parseInt(rangeField.value);
-		console.log(range)
 		const inRangeArray = filter(data,filterWithinRange(range,cityCords));
 
-		console.log(inRangeArray);
+		const yearMonthArray = createPerYearMonthObjectArray(inRangeArray);
+		
+		const yearMonthAmount = collectAmountPerYearMonth(yearMonthArray, inRangeArray);
+
+		
+
+		constructChart(yearMonthAmount);
 	}
 }
 
@@ -41,11 +49,21 @@ async function main() {
 	const filteredWithYear = filter(data,filterWithStartingDate);
 
 
+
 	const cleanArray = [...filteredWithYear];
 
 	cleanArray.forEach((item) => {
-		item.location = createCoordinatesArray(item.location);
+		if(!item.enddatesellingpoint) {
+			item.enddatesellingpoint = "20990101";
+		};
 	});
+
+	cleanArray.forEach((item) => {
+		item.location = createCoordinatesArray(item.location)
+		item.sellingPointStartDate = setTrueDate(item.startdatesellingpoint)
+		item.sellingPointEndDate = setTrueDate(item.enddatesellingpoint)
+	});
+
 
 	clickHandler(cleanArray);
 
