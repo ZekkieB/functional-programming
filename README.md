@@ -41,7 +41,9 @@ In the datum above, the startdatesellingpoint is fromatted in an akward way. The
 ```json
 {
 	"startDateSellingPoint": "Tue Apr 01 2014 00:00:00 GMT+0200 (Central European Summer Time)",
-	"location": [51.930899297,6.076162452]
+	"amountIncrease": 10,
+  "amountDecrease": 4,
+  "total:" : 6
 }
 ```
 
@@ -49,39 +51,6 @@ In the datum above, the startdatesellingpoint is fromatted in an akward way. The
 ## Dependencies
 
 ```
-{
-  "name": "functiona-programming",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rollup --config"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ZekkieB/functional-programming.git"
-  },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/ZekkieB/functional-programming/issues"
-  },
-  "homepage": "https://github.com/ZekkieB/functional-programming#readme",
-  "dependencies": {
-    "cors": "^2.8.5",
-    "d3": "^6.2.0",
-    "express": "^4.17.1"
-  },
-  "devDependencies": {
-    "@rollup/plugin-node-resolve": "^10.0.0",
-    "rollup": "^2.33.1",
-    "rollup-plugin-node-resolve": "^5.2.0",
-    "rollup-plugin-uglify": "^6.0.4",
-    "uglify": "^0.1.5",
-    "uglify-es": "^3.3.9",
-    "uglifyjs": "^2.4.11"
-  }
-}
-
+d3: Used for visualizing and updating charts
+rollup: used for bundling the JS modules
 ```

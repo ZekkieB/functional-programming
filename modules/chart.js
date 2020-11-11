@@ -1,99 +1,149 @@
 import * as d3 from "d3";
-function constructChart(data) {
-	const height = 400;
-	const width = 1000;
 
-	const max = d3.max(data.map((d) => {
-		return d.total;
-	}));
-
-	
-
-	const scaleY = d3.scaleLinear().range([0, height-20]);
-	const scaleX = d3.scaleTime().domain(d3.extent(data, (d) => {
-		return new Date(d.date)
-	})).range([0,width-100]);
-
-	const axisX = d3.axisBottom(scaleX);
-	const axisY = d3.axisLeft(scaleY);
-	
-	scaleY.domain([max+100,0])
-
-	const svg = d3.select("body")
-		.append("svg")
-		.attr("width", width)
-		.attr("height", height);
-
-
-	
-	svg.append("g")
-		.attr("class","scale-x")
-		.style("transform", `translate(0px,${height - 20}px)`)
-		.call(axisX);
-
-	svg.append("g")
-		.attr("class","scale-y")
-		.call(axisY);
-
-	svg.append("path")
-		.datum(data)
-		.attr("fill", "none")
-		.attr("stroke", "steelblue")
-		.attr("stroke-width", 1)
-		.attr("stroke-linejoin","round")
-		.attr("stroke-linecap","round")
-		.attr("d",d3.line()
-			.x((d) => {
-
-				return scaleX(d.date);
-			})
-			.y((d => {
-				return scaleY(d.total);
-		})));
-	svg.selectAll("circle")
-		.data(data)
-		.enter()
-		.append("circle")
-			.attr("r",4)
-			.attr("cx",(d) => {
-				return scaleX(d.date)
-			})
-			.attr("cy", (d) => {
-				return scaleY(d.total)
-			})
+export default class{
+	constructor(data,city) {
+		this.width = 1000;
+		this.height = 400;
+		this.margin = 40;
+		this.data = [];
 			
-			
-			
+		this.duration = 200
 
-	// data.forEach((item,index) => {
-	// 	svg.append("g")
-	// 		.attr("class", `group_${index+1}`);
-	// 	const group = d3.select(`.group_${index+1}`);
+		this.data.push({
+			city: city.value,
+			values: data
+		})
+
+		this.svg = d3.select("body")
+			.append("svg")
+				.attr("width",this.width + this.margin)
+				.attr("height",this.height + this.margin)
+			.append("g")
+				.attr("transform", `translate(${40},${40})`);
+
+		this.scaleX = d3.scaleTime().domain(d3.extent(this.data[0].values, (d) => {
+				return new Date(d.date)
+		})).range([0,this.width-100]);
 		
-	// 	console.log(item)
+		
 
-	// 	for(let i = 0; i < item.amount; i++) {
-	// 		group.append("circle")
-	// 			.attr("r","10")
-	// 			.attr("cx",20+(20*i))
-	// 			.attr("cy",10)
-	// 	};
+		this.scaleY = d3.scaleLinear().range([0, this.height-20]);
+		
+		this.scaleY.domain([200,0])
 
-	// })
+		this.axisX = d3.axisBottom(this.scaleX);
+		this.axisY = d3.axisLeft(this.scaleY);
 
-	// console.log(data);
+
+		this.line = d3.line()
+		.curve(d3.curveCatmullRomOpen)
+		.x((d) => {
+			return this.scaleX(d.date);
+ 		})
+ 		.y((d) =>{
+ 			return this.scaleY(d.total);
+ 		})
+
+ 		this.constructChart();
+ 		
+	}
+
+	constructChart() {
+
+		const flatData = this.flattenDataArray();
+
+		const max = d3.max(flatData.map((d) => {
+					return d.total;
+				}));
+
+
+		this.scaleY.domain([max,0]);
+
+
+		this.svg.append("g")
+			.attr("class","scale-x")
+			.style("transform", `translate(0px,${this.height - 20}px)`)
+			.call(this.axisX);
+
+		this.svg.append("g")
+			.attr("class","scale-y")
+			.call(this.axisY);
+
+
+		this.svg.selectAll(".line-group")
+			.data(this.data)
+			.enter()
+			.append("path")
+			.attr("class", "line")
+			.attr("fill","none")
+			.attr("stroke-width",2)
+			.attr("stroke","steelblue")
+			.attr("d", (d) => {
+				return this.line(d.values)
+			})
+
+
+	};
+
+	flattenDataArray() {
+		return  this.data.map((datum) => {
+			return datum.values.map((datumInner) => {
+				return datumInner
+			});
+		}).flat();
+	}
+
+	updateChart(data, city) {
+
+		this.data.push({
+			city: city.value,
+			values: data
+		})
+
+		
+
+		const flatData = this.flattenDataArray();
+
+		const max = d3.max(flatData.map((d) => {
+					return d.total;
+				}));
+
+		this.scaleY.domain([max,0]);
+
+		this.scaleX = d3.scaleTime().domain(d3.extent(flatData, (d) => {
+				return new Date(d.date)
+		})).range([0,this.width-100]);
+
+		this.axisX = d3.axisBottom(this.scaleX);
+
+		this.svg.select(".scale-y")
+			.transition()
+			.duration(this.duration)
+			.call(this.axisY)
+
+		this.svg.select(".scale-x")
+			.transition()
+			.duration(this.duration)
+			.call(this.axisX)
+
+		const lines = this.svg.selectAll(".line").data(this.data);
+		lines.transition()
+			.duration(this.duration)
+			.attr("d", (d) => {
+				return this.line(d.values);
+			})
+			
+
+		lines.enter()
+			.append("path")
+			.transition().duration(this.duration)
+			.attr("class","line")
+			.attr("fill","none")
+			.attr("stroke-width",2)
+			.attr("stroke","green")
+
+			.attr("d", (d) => {
+				return this.line(d.values)
+			})
+	}
 };
-
-function constructChartUi() {
-
-}
-
-function scaleX() {
-
-}
-
-function scaleY() {
-	
-}
-
-export {constructChart};

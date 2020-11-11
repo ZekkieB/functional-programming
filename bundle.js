@@ -38,9 +38,12 @@
 	function filter(dataArray,condition) {
 		return dataArray.filter(condition);
 	}
+
+	//condition returns a list of objects that have selling point startdates available
 	function filterWithStartingDate(item) {
 		return !!item.startdatesellingpoint;
 	}
+	//condition returns points within a radius in x km's
 	function filterWithinRange(radialDistance,searchLocation) {
 		return function(item) {
 			const distance = haversineDistance(item.location,searchLocation);
@@ -48,6 +51,7 @@
 		};
 	}
 
+	//transforms the date inside the data from the dataset into a true date
 	function setTrueDate(string) {
 		
 		const year = string.slice(0,4);
@@ -57,6 +61,8 @@
 		
 		return new Date(yearMonth);
 	}
+	/*transfroms the coordinates from the dataset into an array with floats instead of strings.
+	To be used to calculate the distance between two coords.*/
 	function createCoordinatesArray(coordinates) {
 		
 		const {latitude, longitude} = coordinates;
@@ -64,6 +70,11 @@
 		return [parseFloat(latitude),parseFloat(longitude)];
 	}
 
+	//get time in ms with a default time of now
+	function getTime(date=new Date()) {
+		return new Date(date).getTime();
+	}
+	//returns an array of objects that has each month of each year from the data
 	function createPerYearMonthObjectArray(dataArray) {
 		const objectArray = [];
 
@@ -78,7 +89,7 @@
 			const aDate = new Date(date);
 			const unique = index === self.findIndex((i) => {
 				const bDate = new Date(i);
-				return bDate.getTime() === aDate.getTime() && aDate.getTime() < new Date().getTime();
+				return getTime(bDate) === getTime(aDate) && getTime(aDate) < getTime();
 			});
 
 			if(unique) {
@@ -91,61 +102,21 @@
 			}
 		});
 
-
-
-		// dataArray.forEach((datum, index, self) => {
-
-		// 	const startDate = new Date(datum.sellingPointStartDate);
-		// 	const endDate = new Date(datum.sellingPointEndDate);
-
-		// 	const uniqueStart = index === self.findIndex((i) => {
-		// 		const bDate = new Date(i.sellingPointStartDate);
-		// 		return bDate.getYear() === startDate.getYear() && bDate.getMonth() === startDate.getMonth();
-		// 	});
-
-		// 	const uniqueEnd = index === self.findIndex((i) => {
-		// 		const bDate = new Date(i.sellingPointEndDate);
-		// 		return bDate.getYear() === endDate.getYear() && bDate.getMonth() === endDate.getMonth() && endDate.getTime() < new Date().getTime();
-		// 	})
-
-		// 	if(uniqueStart) {
-		// 		objectArray.push({
-		// 			date: datum.sellingPointStartDate,
-		// 			amountIncrease: 0,
-		// 			amountDecrease: 0,
-		// 			total: 0
-		// 		});
-		// 	}else if(uniqueEnd) {
-		// 		objectArray.push({
-		// 			date: datum.sellingPointEndDate,
-		// 			amountIncrease: 0,
-		// 			amountDecrease: 0,
-		// 			total: 0
-		// 		});
-		// 	}
-		// });
-
 		objectArray.sort((a,b) => {
-			return new Date(a.date).getTime() - new Date(b.date).getTime();
+			return getTime(a.date) - getTime(b.date);
 		});
-
 
 		return objectArray;
 	}
 
-
+	//counts the total increase and decrease per month of each year
 	function countTotal(dataArray) {
 		const rollingTotalArray = [...dataArray];
 
 		rollingTotalArray.forEach((datum, index) => {
-			const {amountIncrease, amountDecrease} = datum;
-			
-
+			const {amountIncrease, amountDecrease} = datum;		
 			datum.total = amountIncrease - amountDecrease;
-
 		});
-
-		
 
 		return rollingTotalArray.map((datum, index, self) => {
 		
@@ -160,21 +131,24 @@
 		})
 	}
 
+	//collects all the increased and decreased amounts of selling points per month of each year  
 	function collectAmountPerYearMonth(collectorArray, dataArray) {
 		dataArray.forEach((datum,i) => {
+
 			const indexIncrease = collectorArray.findIndex((i) => {
-				return new Date(i.date).getTime() === new Date(datum.sellingPointStartDate).getTime();
+				return getTime(i.date) === getTime(datum.sellingPointStartDate);
 			});
 
 			const indexDecrease = collectorArray.findIndex((i) => {
-
-				
-				return new Date(i.date).getTime() === new Date(datum.sellingPointEndDate).getTime();
+				return getTime(i.date) === getTime(datum.sellingPointEndDate);
 			});
+
 			collectorArray[indexIncrease].amountIncrease = collectorArray[indexIncrease].amountIncrease + 1;
-			if(indexDecrease > -1) collectorArray[indexDecrease].amountDecrease = collectorArray[indexDecrease].amountDecrease + 1;
+			
+			if(indexDecrease > -1) {
+				collectorArray[indexDecrease].amountDecrease = collectorArray[indexDecrease].amountDecrease + 1;
+			}
 		});
-		console.log(collectorArray);
 		return countTotal(collectorArray);
 	}
 
@@ -4956,6 +4930,8 @@
 	  };
 	}
 
+	var epsilon$2 = 1e-12;
+
 	function array$1(x) {
 	  return typeof x === "object" && "length" in x
 	    ? x // Array, TypedArray, NodeList, array-like
@@ -5054,98 +5030,285 @@
 	  return line;
 	}
 
-	function constructChart(data) {
-		const height = 400;
-		const width = 1000;
-
-		const max$1 = max(data.map((d) => {
-			return d.total;
-		}));
-
-		
-
-		const scaleY = linear$1().range([0, height-20]);
-		const scaleX = time().domain(extent(data, (d) => {
-			return new Date(d.date)
-		})).range([0,width-100]);
-
-		const axisX = axisBottom(scaleX);
-		const axisY = axisLeft(scaleY);
-		
-		scaleY.domain([max$1+100,0]);
-
-		const svg = select("body")
-			.append("svg")
-			.attr("width", width)
-			.attr("height", height);
-
-
-		
-		svg.append("g")
-			.attr("class","scale-x")
-			.style("transform", `translate(0px,${height - 20}px)`)
-			.call(axisX);
-
-		svg.append("g")
-			.attr("class","scale-y")
-			.call(axisY);
-
-		svg.append("path")
-			.datum(data)
-			.attr("fill", "none")
-			.attr("stroke", "steelblue")
-			.attr("stroke-width", 1)
-			.attr("stroke-linejoin","round")
-			.attr("stroke-linecap","round")
-			.attr("d",line()
-				.x((d) => {
-
-					return scaleX(d.date);
-				})
-				.y((d => {
-					return scaleY(d.total);
-			})));
-		svg.selectAll("circle")
-			.data(data)
-			.enter()
-			.append("circle")
-				.attr("r",4)
-				.attr("cx",(d) => {
-					return scaleX(d.date)
-				})
-				.attr("cy", (d) => {
-					return scaleY(d.total)
-				});
-				
-				
-				
-
-		// data.forEach((item,index) => {
-		// 	svg.append("g")
-		// 		.attr("class", `group_${index+1}`);
-		// 	const group = d3.select(`.group_${index+1}`);
-			
-		// 	console.log(item)
-
-		// 	for(let i = 0; i < item.amount; i++) {
-		// 		group.append("circle")
-		// 			.attr("r","10")
-		// 			.attr("cx",20+(20*i))
-		// 			.attr("cy",10)
-		// 	};
-
-		// })
-
-		// console.log(data);
+	function point(that, x, y) {
+	  that._context.bezierCurveTo(
+	    that._x1 + that._k * (that._x2 - that._x0),
+	    that._y1 + that._k * (that._y2 - that._y0),
+	    that._x2 + that._k * (that._x1 - x),
+	    that._y2 + that._k * (that._y1 - y),
+	    that._x2,
+	    that._y2
+	  );
 	}
 
-	const geoVerkoopPuntApi = "https://opendata.rdw.nl/resource/cgqw-pfbp.json?$limit=30000";
+	function CardinalOpen(context, tension) {
+	  this._context = context;
+	  this._k = (1 - tension) / 6;
+	}
+
+	CardinalOpen.prototype = {
+	  areaStart: function() {
+	    this._line = 0;
+	  },
+	  areaEnd: function() {
+	    this._line = NaN;
+	  },
+	  lineStart: function() {
+	    this._x0 = this._x1 = this._x2 =
+	    this._y0 = this._y1 = this._y2 = NaN;
+	    this._point = 0;
+	  },
+	  lineEnd: function() {
+	    if (this._line || (this._line !== 0 && this._point === 3)) this._context.closePath();
+	    this._line = 1 - this._line;
+	  },
+	  point: function(x, y) {
+	    x = +x, y = +y;
+	    switch (this._point) {
+	      case 0: this._point = 1; break;
+	      case 1: this._point = 2; break;
+	      case 2: this._point = 3; this._line ? this._context.lineTo(this._x2, this._y2) : this._context.moveTo(this._x2, this._y2); break;
+	      case 3: this._point = 4; // proceed
+	      default: point(this, x, y); break;
+	    }
+	    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
+	    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
+	  }
+	};
+
+	function point$1(that, x, y) {
+	  var x1 = that._x1,
+	      y1 = that._y1,
+	      x2 = that._x2,
+	      y2 = that._y2;
+
+	  if (that._l01_a > epsilon$2) {
+	    var a = 2 * that._l01_2a + 3 * that._l01_a * that._l12_a + that._l12_2a,
+	        n = 3 * that._l01_a * (that._l01_a + that._l12_a);
+	    x1 = (x1 * a - that._x0 * that._l12_2a + that._x2 * that._l01_2a) / n;
+	    y1 = (y1 * a - that._y0 * that._l12_2a + that._y2 * that._l01_2a) / n;
+	  }
+
+	  if (that._l23_a > epsilon$2) {
+	    var b = 2 * that._l23_2a + 3 * that._l23_a * that._l12_a + that._l12_2a,
+	        m = 3 * that._l23_a * (that._l23_a + that._l12_a);
+	    x2 = (x2 * b + that._x1 * that._l23_2a - x * that._l12_2a) / m;
+	    y2 = (y2 * b + that._y1 * that._l23_2a - y * that._l12_2a) / m;
+	  }
+
+	  that._context.bezierCurveTo(x1, y1, x2, y2, that._x2, that._y2);
+	}
+
+	function CatmullRomOpen(context, alpha) {
+	  this._context = context;
+	  this._alpha = alpha;
+	}
+
+	CatmullRomOpen.prototype = {
+	  areaStart: function() {
+	    this._line = 0;
+	  },
+	  areaEnd: function() {
+	    this._line = NaN;
+	  },
+	  lineStart: function() {
+	    this._x0 = this._x1 = this._x2 =
+	    this._y0 = this._y1 = this._y2 = NaN;
+	    this._l01_a = this._l12_a = this._l23_a =
+	    this._l01_2a = this._l12_2a = this._l23_2a =
+	    this._point = 0;
+	  },
+	  lineEnd: function() {
+	    if (this._line || (this._line !== 0 && this._point === 3)) this._context.closePath();
+	    this._line = 1 - this._line;
+	  },
+	  point: function(x, y) {
+	    x = +x, y = +y;
+
+	    if (this._point) {
+	      var x23 = this._x2 - x,
+	          y23 = this._y2 - y;
+	      this._l23_a = Math.sqrt(this._l23_2a = Math.pow(x23 * x23 + y23 * y23, this._alpha));
+	    }
+
+	    switch (this._point) {
+	      case 0: this._point = 1; break;
+	      case 1: this._point = 2; break;
+	      case 2: this._point = 3; this._line ? this._context.lineTo(this._x2, this._y2) : this._context.moveTo(this._x2, this._y2); break;
+	      case 3: this._point = 4; // proceed
+	      default: point$1(this, x, y); break;
+	    }
+
+	    this._l01_a = this._l12_a, this._l12_a = this._l23_a;
+	    this._l01_2a = this._l12_2a, this._l12_2a = this._l23_2a;
+	    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
+	    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
+	  }
+	};
+
+	var catmullRomOpen = (function custom(alpha) {
+
+	  function catmullRom(context) {
+	    return alpha ? new CatmullRomOpen(context, alpha) : new CardinalOpen(context, 0);
+	  }
+
+	  catmullRom.alpha = function(alpha) {
+	    return custom(+alpha);
+	  };
+
+	  return catmullRom;
+	})(0.5);
+
+	class Chart{
+		constructor(data,city) {
+			this.width = 1000;
+			this.height = 400;
+			this.margin = 40;
+			this.data = [];
+				
+			this.duration = 200;
+
+			this.data.push({
+				city: city.value,
+				values: data
+			});
+
+			this.svg = select("body")
+				.append("svg")
+					.attr("width",this.width + this.margin)
+					.attr("height",this.height + this.margin)
+				.append("g")
+					.attr("transform", `translate(${40},${40})`);
+
+			this.scaleX = time().domain(extent(this.data[0].values, (d) => {
+					return new Date(d.date)
+			})).range([0,this.width-100]);
+			
+			
+
+			this.scaleY = linear$1().range([0, this.height-20]);
+			
+			this.scaleY.domain([200,0]);
+
+			this.axisX = axisBottom(this.scaleX);
+			this.axisY = axisLeft(this.scaleY);
 
 
+			this.line = line()
+			.curve(catmullRomOpen)
+			.x((d) => {
+				return this.scaleX(d.date);
+	 		})
+	 		.y((d) =>{
+	 			return this.scaleY(d.total);
+	 		});
+
+	 		this.constructChart();
+	 		
+		}
+
+		constructChart() {
+
+			const flatData = this.flattenDataArray();
+
+			const max$1 = max(flatData.map((d) => {
+						return d.total;
+					}));
 
 
+			this.scaleY.domain([max$1,0]);
 
-	function reverseGeoCode(city) {
+
+			this.svg.append("g")
+				.attr("class","scale-x")
+				.style("transform", `translate(0px,${this.height - 20}px)`)
+				.call(this.axisX);
+
+			this.svg.append("g")
+				.attr("class","scale-y")
+				.call(this.axisY);
+
+
+			this.svg.selectAll(".line-group")
+				.data(this.data)
+				.enter()
+				.append("path")
+				.attr("class", "line")
+				.attr("fill","none")
+				.attr("stroke-width",2)
+				.attr("stroke","steelblue")
+				.attr("d", (d) => {
+					return this.line(d.values)
+				});
+
+
+		};
+
+		flattenDataArray() {
+			return  this.data.map((datum) => {
+				return datum.values.map((datumInner) => {
+					return datumInner
+				});
+			}).flat();
+		}
+
+		updateChart(data, city) {
+
+			this.data.push({
+				city: city.value,
+				values: data
+			});
+
+			
+
+			const flatData = this.flattenDataArray();
+
+			const max$1 = max(flatData.map((d) => {
+						return d.total;
+					}));
+
+			this.scaleY.domain([max$1,0]);
+
+			this.scaleX = time().domain(extent(flatData, (d) => {
+					return new Date(d.date)
+			})).range([0,this.width-100]);
+
+			this.axisX = axisBottom(this.scaleX);
+
+			this.svg.select(".scale-y")
+				.transition()
+				.duration(this.duration)
+				.call(this.axisY);
+
+			this.svg.select(".scale-x")
+				.transition()
+				.duration(this.duration)
+				.call(this.axisX);
+
+			const lines = this.svg.selectAll(".line").data(this.data);
+			lines.transition()
+				.duration(this.duration)
+				.attr("d", (d) => {
+					return this.line(d.values);
+				});
+				
+
+			lines.enter()
+				.append("path")
+				.transition().duration(this.duration)
+				.attr("class","line")
+				.attr("fill","none")
+				.attr("stroke-width",2)
+				.attr("stroke","green")
+
+				.attr("d", (d) => {
+					return this.line(d.values)
+				});
+		}
+	}
+
+	//google geocoder api wrapped in a promise, for use in an async/await function
+	function reverseGeoCode (city) {
 		const geocoder =  new google.maps.Geocoder();
 		return new Promise((resolve, reject) => {
 			geocoder.geocode({"address" : `${city},nl`}, (result,status) => {
@@ -5156,12 +5319,10 @@
 		});
 	}
 
-	function clickHandler(data) {
-		const button = document.querySelector("button");
-		const cityField = document.querySelector("#city");
-		const rangeField = document.querySelector("#range");
-		button.onclick = async function() {
-			const cityCords = await reverseGeoCode(cityField.value);
+	let visualisation = null;
+
+	async function clickEventHandler(cityField, rangeField, data) {
+		const cityCords = await reverseGeoCode(cityField.value);
 			const range = parseInt(rangeField.value);
 			const inRangeArray = filter(data,filterWithinRange(range,cityCords));
 
@@ -5169,12 +5330,29 @@
 			
 			const yearMonthAmount = collectAmountPerYearMonth(yearMonthArray, inRangeArray);
 
-			
+			if(!document.querySelector("svg")) {
+				visualisation = new Chart(yearMonthAmount, cityField);
+			}else {
+				visualisation.updateChart(yearMonthAmount, cityField);
+			}		
 
-			constructChart(yearMonthAmount);
-		};
+			console.log(visualisation);
 	}
 
+	function clickHandler (data) {
+		const button = document.querySelector("button");
+		const cityField = document.querySelector("#city");
+		const rangeField = document.querySelector("#range");
+		
+		button.addEventListener("click", () => {
+			clickEventHandler(cityField,rangeField,data);
+		}, true);
+	}
+
+	const geoVerkoopPuntApi = "https://opendata.rdw.nl/resource/cgqw-pfbp.json?$limit=30000";
+
+
+	main();
 
 	async function main() {
 
@@ -5202,7 +5380,5 @@
 
 		return 0;
 	}
-
-	main();
 
 }());
