@@ -14,8 +14,7 @@ async function main() {
 
 	const filteredWithYear = filter(data,filterWithStartingDate);
 
-
-
+	//clone filtered array into a new array
 	const cleanArray = [...filteredWithYear];
 
 	cleanArray.forEach((item) => {
@@ -24,6 +23,8 @@ async function main() {
 		};
 	});
 
+
+	//clean the data 
 	cleanArray.forEach((item) => {
 		item.location = createCoordinatesArray(item.location)
 		item.sellingPointStartDate = setTrueDate(item.startdatesellingpoint)

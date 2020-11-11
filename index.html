@@ -5,11 +5,26 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBnt5_unE1t56pFgcIo2A03zSUlwwhv8v0"></script>
 	<title>Document</title>
+	<link rel="stylesheet" href="./assets/style.css">
 </head>
-<body>
-		<input id="city" type="text" />
-		<input id="range" type="text" />
-		<button>Zoek</button>
-	<script src="bundle.js"></script>
-</body>
+	<body>
+		<div id="wrapper">
+			<div id="ui">
+				<h1>Demo Functional Programming</h1>
+				<div>
+					<div>
+						<h2>Stad</h2>
+					</div>
+					<div><input id="city" type="text" /></div>
+				</div>
+				<div>
+					<div><h2>Afstand</h2></div>
+					<div><input id="range" type="text" /></div>
+				</div>
+				<button>Zoek</button>
+			</div>
+			<div id="chart"></div>
+		</div>
+		<script src="bundle.js"></script>
+	</body>
 </html>

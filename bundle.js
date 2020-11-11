@@ -5173,7 +5173,7 @@
 				values: data
 			});
 
-			this.svg = select("body")
+			this.svg = select("div#chart")
 				.append("svg")
 					.attr("width",this.width + this.margin)
 					.attr("height",this.height + this.margin)
@@ -5360,8 +5360,7 @@
 
 		const filteredWithYear = filter(data,filterWithStartingDate);
 
-
-
+		//clone filtered array into a new array
 		const cleanArray = [...filteredWithYear];
 
 		cleanArray.forEach((item) => {
@@ -5369,6 +5368,8 @@
 				item.enddatesellingpoint = "20990101";
 			}	});
 
+
+		//clean the data 
 		cleanArray.forEach((item) => {
 			item.location = createCoordinatesArray(item.location);
 			item.sellingPointStartDate = setTrueDate(item.startdatesellingpoint);

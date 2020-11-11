@@ -14,7 +14,7 @@ export default class{
 			values: data
 		})
 
-		this.svg = d3.select("body")
+		this.svg = d3.select("div#chart")
 			.append("svg")
 				.attr("width",this.width + this.margin)
 				.attr("height",this.height + this.margin)

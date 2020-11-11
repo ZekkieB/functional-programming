@@ -53,4 +53,19 @@ In the datum above, the startdatesellingpoint is fromatted in an akward way. The
 ```
 d3: Used for visualizing and updating charts
 rollup: used for bundling the JS modules
+haversine distance: To calculate distance between two coordinates
 ```
+
+## Credits
+
+[Deanna Bosschert](https://github.com/deannabosschert/)
+
+- [Rubric](https://github.com/ZekkieB/functional-programming/issues/3)
+- [Feedback onderzoeksvraag](https://github.com/ZekkieB/functional-programming/issues/2)
+
+[Sam Slotemaker](https://github.com/SamSlotemaker/)
+
+- [Feedback onderzoeksvragen](https://github.com/ZekkieB/functional-programming/issues/1)
+
+[dcousens](https://github.com/dcousens)
+-[Haversine distance](https://github.com/dcousens/haversine-distance)
