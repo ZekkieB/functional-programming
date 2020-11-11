@@ -69,6 +69,9 @@ export default class{
 			.attr("class","scale-y")
 			.call(this.axisY);
 
+		this.svg.append("text")
+			.attr("class","label-meters")
+			.text("Parkeermeters")
 
 		this.svg.selectAll(".line-group")
 			.data(this.data)

@@ -15,3 +15,7 @@ html, body{
 	align-items: center;
 	flex-direction: column;
 }
+
+.label-meters{
+	transform: translate(10,10);
+}
